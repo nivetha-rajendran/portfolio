@@ -9,8 +9,9 @@ dotenv.config();
 
 const app = express();
 app.use(cors()); // allow requests from your frontend domain
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 
 app.post("/send-email", async (req, res) => {
   try {
