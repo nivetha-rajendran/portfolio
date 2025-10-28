@@ -556,65 +556,61 @@ Focused on a clean, responsive interface for a smooth online marketplace experie
 </form>
 
 <script>
-  // ✅ API endpoint for backend
-  const API_ENDPOINT = "https://api.nivetharajendran.info/send-email";
+const API_ENDPOINT = "https://api.nivetharajendran.info/send-email";
 
-  const form = document.getElementById("contactForm");
-  const loading = form.querySelector(".loading");
-  const errorMessage = form.querySelector(".error-message");
-  const sentMessage = form.querySelector(".sent-message");
+const form = document.getElementById("contactForm");
+const loading = form.querySelector(".loading");
+const errorMessage = form.querySelector(".error-message");
+const sentMessage = form.querySelector(".sent-message");
 
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-    // Show loader, hide old messages
-    loading.style.display = "block";
-    errorMessage.style.display = "none";
-    sentMessage.style.display = "none";
+  loading.style.display = "block";
+  errorMessage.style.display = "none";
+  sentMessage.style.display = "none";
 
-    // Collect form data
-    const payload = {
-      name: document.getElementById("name-field").value.trim(),
-      email: document.getElementById("email-field").value.trim(),
-      subject: document.getElementById("subject-field").value.trim(),
-      message: document.getElementById("message-field").value.trim(),
-    };
+  const payload = {
+    name: document.getElementById("name-field").value.trim(),
+    email: document.getElementById("email-field").value.trim(),
+    subject: document.getElementById("subject-field").value.trim(),
+    message: document.getElementById("message-field").value.trim(),
+  };
 
-    // Validate fields
-    if (!payload.name || !payload.email || !payload.subject || !payload.message) {
-      loading.style.display = "none";
-      errorMessage.textContent = "⚠️ Please fill in all fields.";
-      errorMessage.style.display = "block";
-      return;
-    }
+  // ✅ validation
+  if (!payload.name || !payload.email || !payload.subject || !payload.message) {
+    loading.style.display = "none";
+    errorMessage.textContent = "Please fill in all fields.";
+    errorMessage.style.display = "block";
+    return;
+  }
 
-    try {
-      // Send request to backend
-      const res = await fetch(API_ENDPOINT, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+  try {
+    const res = await fetch(API_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
 
-      const data = await res.json();
-      loading.style.display = "none";
+    const data = await res.json();
+    loading.style.display = "none";
 
-      if (res.ok) {
-        sentMessage.style.display = "block";
-        form.reset();
-      } else {
-        errorMessage.textContent = data.message || "❌ Failed to send message.";
-        errorMessage.style.display = "block";
-      }
-    } catch (err) {
-      console.error("Error:", err);
-      loading.style.display = "none";
-      errorMessage.textContent =
-        "🚨 Something went wrong. Please try again later.";
+    if (res.ok) {
+      sentMessage.style.display = "block";
+      form.reset();
+    } else {
+      errorMessage.textContent = data.message || "Failed to send message.";
       errorMessage.style.display = "block";
     }
-  });
+  } catch (err) {
+    console.error("Error:", err);
+    loading.style.display = "none";
+    errorMessage.textContent = "Something went wrong. Please try again later.";
+    errorMessage.style.display = "block";
+  }
+});
 </script>
+
 
 
           </div><!-- End Contact Form -->
