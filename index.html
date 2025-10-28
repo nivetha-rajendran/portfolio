@@ -509,100 +509,113 @@ Focused on a clean, responsive interface for a smooth online marketplace experie
           </div>
 
           <div class="col-lg-7">
-           <form id="contactForm" class="php-email-form" data-aos="fade-up" data-aos-delay="200">
-            <div class="row gy-4">
+   <form
+  id="contactForm"
+  class="php-email-form"
+  action="https://api.nivetharajendran.info/send-email"
+  data-aos="fade-up"
+  data-aos-delay="200"
+>
+  <div class="row gy-4">
+    <div class="col-md-6">
+      <label for="name-field" class="pb-2">Your Name</label>
+      <input type="text" name="name" id="name-field" class="form-control" required />
+    </div>
 
-              <div class="col-md-6">
-                <label for="name-field" class="pb-2">Your Name</label>
-                <input type="text" name="name" id="name-field" class="form-control" required>
-              </div>
+    <div class="col-md-6">
+      <label for="email-field" class="pb-2">Your Email</label>
+      <input type="email" class="form-control" name="email" id="email-field" required />
+    </div>
 
-              <div class="col-md-6">
-                <label for="email-field" class="pb-2">Your Email</label>
-                <input type="email" class="form-control" name="email" id="email-field" required>
-              </div>
+    <div class="col-md-12">
+      <label for="subject-field" class="pb-2">Subject</label>
+      <input type="text" class="form-control" name="subject" id="subject-field" required />
+    </div>
 
-              <div class="col-md-12">
-                <label for="subject-field" class="pb-2">Subject</label>
-                <input type="text" class="form-control" name="subject" id="subject-field" required>
-              </div>
+    <div class="col-md-12">
+      <label for="message-field" class="pb-2">Message</label>
+      <textarea
+        class="form-control"
+        name="message"
+        rows="10"
+        id="message-field"
+        required
+      ></textarea>
+    </div>
 
-              <div class="col-md-12">
-                <label for="message-field" class="pb-2">Message</label>
-                <textarea class="form-control" name="message" rows="10" id="message-field" required></textarea>
-              </div>
+    <div class="col-md-12 text-center">
+      <div class="loading" style="display: none;">Loading...</div>
+      <div class="error-message" style="display: none; color: red;"></div>
+      <div class="sent-message" style="display: none; color: green;">
+        ✅ Your message has been sent. Thank you!
+      </div>
 
-              <div class="col-md-12 text-center">
-                <div class="loading" style="display: none;">Loading</div>
-                <div class="error-message" style="display: none; color: red;"></div>
-                <div class="sent-message" style="display: none; color: green;">Your message has been sent. Thank you!</div>
+      <button type="submit">Send Message</button>
+    </div>
+  </div>
+</form>
 
-                <button type="submit">Send Message</button>
-              </div>
+<script>
+  // ✅ API endpoint for backend
+  const API_ENDPOINT = "https://api.nivetharajendran.info/send-email";
 
-            </div>
-          </form>
+  const form = document.getElementById("contactForm");
+  const loading = form.querySelector(".loading");
+  const errorMessage = form.querySelector(".error-message");
+  const sentMessage = form.querySelector(".sent-message");
 
-          <script>
-          // 🌐 Change this URL once backend is live
-          // Example: "https://api.nivetharajendran.info/send-email"
-          const API_ENDPOINT = "https://api.nivetharajendran.info/send-email"; 
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-          const form = document.getElementById("contactForm");
-          const loading = form.querySelector(".loading");
-          const errorMessage = form.querySelector(".error-message");
-          const sentMessage = form.querySelector(".sent-message");
+    // Show loader, hide old messages
+    loading.style.display = "block";
+    errorMessage.style.display = "none";
+    sentMessage.style.display = "none";
 
-          form.addEventListener("submit", async (e) => {
-            e.preventDefault();
+    // Collect form data
+    const payload = {
+      name: document.getElementById("name-field").value.trim(),
+      email: document.getElementById("email-field").value.trim(),
+      subject: document.getElementById("subject-field").value.trim(),
+      message: document.getElementById("message-field").value.trim(),
+    };
 
-            // Show loader, hide messages
-            loading.style.display = "block";
-            errorMessage.style.display = "none";
-            sentMessage.style.display = "none";
+    // Validate fields
+    if (!payload.name || !payload.email || !payload.subject || !payload.message) {
+      loading.style.display = "none";
+      errorMessage.textContent = "⚠️ Please fill in all fields.";
+      errorMessage.style.display = "block";
+      return;
+    }
 
-            // Collect form data
-            const payload = {
-              name: document.getElementById("name-field").value.trim(),
-              email: document.getElementById("email-field").value.trim(),
-              subject: document.getElementById("subject-field").value.trim(),
-              message: document.getElementById("message-field").value.trim(),
-            };
+    try {
+      // Send request to backend
+      const res = await fetch(API_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
-            // Validate required fields
-            if (!payload.name || !payload.email || !payload.subject || !payload.message) {
-              loading.style.display = "none";
-              errorMessage.textContent = "Please fill in all fields.";
-              errorMessage.style.display = "block";
-              return;
-            }
+      const data = await res.json();
+      loading.style.display = "none";
 
-            try {
-              // Send to Node backend
-              const res = await fetch(API_ENDPOINT, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload),
-              });
+      if (res.ok) {
+        sentMessage.style.display = "block";
+        form.reset();
+      } else {
+        errorMessage.textContent = data.message || "❌ Failed to send message.";
+        errorMessage.style.display = "block";
+      }
+    } catch (err) {
+      console.error("Error:", err);
+      loading.style.display = "none";
+      errorMessage.textContent =
+        "🚨 Something went wrong. Please try again later.";
+      errorMessage.style.display = "block";
+    }
+  });
+</script>
 
-              const data = await res.json();
-              loading.style.display = "none";
-
-              if (res.ok) {
-                sentMessage.style.display = "block";
-                form.reset();
-              } else {
-                errorMessage.textContent = data.message || "Failed to send message.";
-                errorMessage.style.display = "block";
-              }
-            } catch (err) {
-              console.error("Error:", err);
-              loading.style.display = "none";
-              errorMessage.textContent = "Something went wrong. Please try again later.";
-              errorMessage.style.display = "block";
-            }
-          });
-          </script>
 
           </div><!-- End Contact Form -->
 
