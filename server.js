@@ -1,17 +1,18 @@
 // backend/server.js
 import express from "express";
-import nodemailer from "nodemailer";
 import cors from "cors";
-import bodyParser from "body-parser";
 import dotenv from "dotenv";
+import { Resend } from "resend";
 
 dotenv.config();
 
 const app = express();
-app.use(cors()); // allow requests from your frontend domain
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Initialize Resend
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 app.post("/send-email", async (req, res) => {
   try {
@@ -21,34 +22,29 @@ app.post("/send-email", async (req, res) => {
       return res.status(400).json({ message: "All fields are required." });
     }
 
-    // Configure transporter (Gmail example using App Password)
-    const transporter = nodemailer.createTransport({
-      host: process.env.EMAIL_USER,
-      port: process.env.EMAIL_PORT,
-      secure: true,
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
+    // Send email using Resend API
+    const data = await resend.emails.send({
+      from: "Portfolio Contact <onboarding@resend.dev>", // or use your verified domain
+      to: process.env.RECEIVER_EMAIL || "nivetha.rabs@gmail.com",
+      reply_to: email,
+      subject: `Portfolio Contact: ${subject}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; line-height: 1.5;">
+          <h2>New Portfolio Contact Message</h2>
+          <p><strong>Name:</strong> ${name}</p>
+          <p><strong>Email:</strong> ${email}</p>
+          <p><strong>Subject:</strong> ${subject}</p>
+          <p><strong>Message:</strong></p>
+          <p>${message}</p>
+        </div>
+      `,
     });
 
-    const mailOptions = {
-      from: process.env.EMAIL_USER,     // sender address (use your email)
-      replyTo: email,                   // allow replying to the submitter
-      to: process.env.EMAIL_USER,       // where you want to receive contact emails
-      subject: `Portfolio Contact: ${subject}`,
-      text: `Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`,
-      html: `<p><strong>Name:</strong> ${name}</p>
-             <p><strong>Email:</strong> ${email}</p>
-             <p><strong>Message:</strong></p><p>${message}</p>`
-    };
-
-    await transporter.sendMail(mailOptions);
-    return res.status(200).json({ message: "Email sent successfully" });
+    console.log("Email sent:", data);
+    return res.status(200).json({ message: "Email sent successfully 🚀" });
   } catch (err) {
     console.error("Error sending email:", err);
-    return res.status(500).json({ message: "Failed to send email" });
+    return res.status(500).json({ message: "Failed to send email", error: err.message });
   }
 });
 
